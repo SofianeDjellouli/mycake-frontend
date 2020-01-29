@@ -1,0 +1,94 @@
+:root {
+	--primary: #3f51b5;
+}
+body,
+.MuiInputBase-root {
+	font-size: 14px !important;
+}
+
+[class^="Mui"],
+body {
+	font-family: Montserrat !important;
+}
+main {
+	min-height: calc(100vh - 59px);
+	padding-top: 50px !important;
+}
+@media (max-width: 768px) {
+	.container {
+		padding: 0 15px;
+	}
+}
+@media (min-width: 768px) {
+	main {
+		min-height: calc(100vh - 84px);
+	}
+	.container {
+		width: 750px !important;
+	}
+}
+
+@media (min-width: 992px) {
+	.container {
+		width: 970px !important;
+	}
+}
+
+@media (min-width: 1200px) {
+	.container {
+		width: 1170px !important;
+	}
+}
+.container {
+	/*	box-sizing: border-box;
+	padding-right: 15px;
+	padding-left: 15px;*/
+	margin-right: auto !important;
+	margin-left: auto !important;
+}
+input {
+	text-overflow: ellipsis;
+}
+.input-wrapper {
+	position: relative;
+	display: flex;
+	align-items: center;
+}
+.input-wrapper input {
+	width: 100%;
+}
+.input-wrapper i {
+	position: absolute;
+	right: 10px;
+	color: var(--primary);
+	cursor: pointer;
+}
+.align-center {
+	display: flex;
+	align-items: center;
+}
+h2 {
+	text-align: center;
+}
+.justify-center {
+	display: flex;
+	justify-content: center;
+	width: 100%;
+}
+.column {
+	display: flex;
+	flex-direction: column;
+}
+.right {
+	margin-right: 10px;
+}
+.left {
+	margin-left: 10px;
+}
+.fas,
+.far {
+	color: var(--primary);
+}
+.pointer {
+	cursor: pointer;
+}

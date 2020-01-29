@@ -1,0 +1,38 @@
+.hero {
+	position: relative;
+	padding: 0 !important;
+	overflow: hidden;
+	margin-top: -84px;
+	min-height: 100vh;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+	text-align: center;
+}
+.hero img {
+	position: absolute;
+	right: 0;
+	top: 0;
+	max-width: none;
+	width: 100vw;
+	z-index: -1;
+}
+@media screen and (max-width: 985px) {
+	.hero img {
+		width: auto;
+		height: 100%;
+	}
+}
+@media screen and (min-height: 1270px) {
+	.hero img {
+		height: 100vw;
+		width: auto;
+	}
+}
+.features {
+	text-align: center;
+}
+.features img {
+	border-radius: 100px;
+}

@@ -1,0 +1,19 @@
+.field-update p {
+	font-weight: 500;
+	padding-left: 10px;
+}
+.field-update > div {
+	justify-content: flex-end;
+	display: flex;
+	margin-top: 5px;
+	color: var(--primary);
+}
+.field-update i {
+	cursor: pointer;
+}
+.field-active {
+	border-color: transparent !important;
+}
+.field-active:hover {
+	background-color: lightgray !important;
+}
