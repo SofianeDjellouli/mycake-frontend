@@ -1,6 +1,7 @@
 import React, { useContext, useCallback, useEffect, useState } from "react";
 import { useTitle } from "hookrouter";
 import { Grid, Button, FormHelperText } from "@material-ui/core";
+import dayjs from "dayjs";
 import {
 	GlobalContext,
 	firebase,
@@ -9,10 +10,11 @@ import {
 	useToggle,
 	handleFiles
 } from "../../utils";
-import { FieldUpdate, Spinner } from "../";
+import { FieldUpdate, Spinner, DOBUpdate } from "../";
+import "./style.css";
 
 const Profile = _ => {
-	const { user: { uid } = {} } = useContext(GlobalContext),
+	const { user: { uid } = {}, setUser, setSnackbar } = useContext(GlobalContext),
 		[data, setData] = useState(profile),
 		handleName = useCallback(
 			name => {
@@ -29,6 +31,7 @@ const Profile = _ => {
 						...data,
 						photoURL: { error: "", value: file, name }
 					}));
+					setUser(user => ({ ...user, photoURL: file }));
 					handlePromise(
 						firebase
 							.storage()
@@ -36,20 +39,45 @@ const Profile = _ => {
 							.child(name)
 							.putString(file, "data_url")
 							.then(({ ref }) => ref.getDownloadURL())
-							.then(photoURL => firebase.auth().currentUser.updateProfile({ photoURL })),
-						toggleImageLoading.toggle
+							.then(photoURL => {
+								firebase.auth().currentUser.updateProfile({ photoURL });
+								return photoURL;
+							})
+							.then(photoURL =>
+								firebase
+									.database()
+									.ref(`users/${uid}`)
+									.update({ photoURL })
+							),
+						toggleImageLoading.toggle,
+						setSnackbar
 					);
 				}),
-			[toggleImageLoading.toggle]
+			[toggleImageLoading.toggle, uid, setUser, setSnackbar]
 		),
-		handleEmail = useCallback(email => firebase.auth().currentUser.updateEmail(email), []),
+		handleEmail = useCallback(
+			email =>
+				firebase
+					.auth()
+					.currentUser.updateEmail(email)
+					.then(_ =>
+						firebase
+							.database()
+							.ref(`users/${uid}`)
+							.update({ email })
+					),
+			[uid]
+		),
 		/*handlePassword = useCallback(
 			password => firebase.auth().currentUser.updatePassword(password),
 			[]
 		),*/
 		toggleLoading = useToggle(),
-		{ photoURL } = data;
-	console.log(data.DOB.value, toggleLoading.toggled);
+		{
+			photoURL,
+			DOB: { value }
+		} = data;
+
 	useEffect(
 		_ => {
 			if (uid)
@@ -66,6 +94,7 @@ const Profile = _ => {
 								const field = dataKeys[i];
 								_profile[field].value = data[field];
 							}
+							_profile.DOB.value = dayjs(_profile.DOB.value);
 							setData(_profile);
 						}),
 					toggleLoading.toggle
@@ -73,13 +102,14 @@ const Profile = _ => {
 		},
 		[uid, toggleLoading.toggle]
 	);
-	useTitle("Jetpack - My profile");
+	useTitle("MyCake - My profile");
+
 	return (
-		<main className="main-profile">
-			{(toggleLoading.toggled && !photoURL.value) || !uid || true ? (
+		<main className="profile-update">
+			{(toggleLoading.toggled && !photoURL.value) || !uid ? (
 				Spinner()
 			) : (
-				<div className="container">
+				<div className="container profile">
 					<Grid container spacing={3} justify="center">
 						<Grid item sm={6}>
 							<Grid container spacing={3} justify="center" className="box">
@@ -115,12 +145,18 @@ const Profile = _ => {
 								</Grid>
 								<FieldUpdate {...handleName("email")} onSubmit={handleEmail} />
 								<FieldUpdate {...handleName("phoneNumber")} />
-								<FieldUpdate {...handleName("DOB")} />
+								<DOBUpdate {...{ value }} />
 								<FieldUpdate {...handleName("addressLine1")} />
 								<FieldUpdate {...handleName("addressLine2")} />
 								<FieldUpdate {...handleName("city")} />
 								<FieldUpdate {...handleName("state")} />
 								<FieldUpdate {...handleName("country")} />
+								<Grid item sm={12} component="h3">
+									Security questions
+								</Grid>
+								<FieldUpdate {...handleName("q1")} sm={12} />
+								<FieldUpdate {...handleName("q2")} sm={12} />
+								<FieldUpdate {...handleName("q3")} sm={12} />
 							</Grid>
 						</Grid>
 					</Grid>

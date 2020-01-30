@@ -29,11 +29,12 @@ const _Header = _ => {
 		handleHome = useCallback(_ => navigate("/"), []),
 		handleLogin = useCallback(_ => navigate("/login"), []),
 		hasUser = typeof user === "object";
+
 	return (
 		<header>
 			<div id="fixed-header">
 				<div className="container">
-					<h1 onClick={handleHome}>JetCake</h1>
+					<h1 onClick={handleHome}>MyCake</h1>
 					{user !== "loading" &&
 						(hasUser ? (
 							isMobile ? (

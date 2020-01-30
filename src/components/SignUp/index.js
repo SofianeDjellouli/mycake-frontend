@@ -1,12 +1,20 @@
-import React, { useCallback, useState } from "react";
-import { useTitle } from "hookrouter";
+import React, { useCallback, useState, useContext } from "react";
+import { useTitle, navigate } from "hookrouter";
 import { Grid, Button, FormHelperText } from "@material-ui/core";
 import { DatePicker } from "@material-ui/pickers";
-import { useToggle, handleFiles, firebase, handlePromise, profile } from "../../utils";
+import {
+	useToggle,
+	handleFiles,
+	firebase,
+	handlePromise,
+	profile,
+	GlobalContext
+} from "../../utils";
 import { RenderInput, RenderPassword, RenderPhone, GridForm } from "../";
 
 const SignUp = _ => {
-	const [form, setForm] = useState(profile),
+	const { setSnackbar } = useContext(GlobalContext),
+		[form, setForm] = useState(profile),
 		onChange = useCallback(
 			({ target: { name, value } }) =>
 				setForm(form => ({ ...form, [name]: { ...form[name], value, error: "" } })),
@@ -38,78 +46,88 @@ const SignUp = _ => {
 		handleSubmit = useCallback(
 			e => {
 				e.preventDefault();
-				let errors = {};
-				const formKeys = Object.keys(form);
-				for (let i = 0; i < formKeys.length; i++)
-					if (!form[formKeys[i]].value) errors[formKeys[i]] = "This field is required";
-				const { password, confirmPassword, email, confirmEmail, photoURL, ...rest } = form;
-				if (password.value !== confirmPassword.value)
-					errors.confirmPassword = "Passwords must match.";
-				if (email.value !== confirmEmail.value) errors.confirmEmail = "Emails must match.";
-				const errorKeys = Object.keys(errors);
-				if (errorKeys.length)
-					setForm(form => {
-						let _form = {};
-						for (let i = 0; i < errorKeys.length; i++) {
-							const field = errorKeys[i];
-							_form[field] = { ...form[field], error: errors[field] };
-						}
-						return { ...form, ..._form };
-					});
-				else {
-					const { value, name } = photoURL;
-					let _photoURL;
-					handlePromise(
-						firebase
-							.storage()
-							.ref()
-							.child(name)
-							.putString(value, "data_url")
-							.then(({ ref }) => ref.getDownloadURL())
-							.then(value => (_photoURL = value))
-							.then(_ =>
-								firebase.auth().createUserWithEmailAndPassword(email.value, password.value)
-							)
-							.then(({ user }) => {
-								user.updateProfile({ photoURL: _photoURL });
-								return user.uid;
-							})
-							.then(uid => {
-								let data = {};
-								const restKeys = Object.keys(rest);
-								for (let i = 0; i < restKeys.length; i++) {
-									let field = restKeys[i];
-									data[field] = form[field].value;
-								}
-								data.DOB = form.DOB.value.toJSON();
-								return firebase
-									.database()
-									.ref(`users/${uid}`)
-									.set(data);
-							}),
-						toggleSend.toggle
-					);
+				if (!toggleSend.toggled) {
+					let errors = {};
+					const formKeys = Object.keys(form);
+					for (let i = 0; i < formKeys.length; i++)
+						if (!form[formKeys[i]].value) errors[formKeys[i]] = "This field is required";
+					const { password, confirmPassword, email, confirmEmail, photoURL, ...rest } = form;
+					if (password.value !== confirmPassword.value)
+						errors.confirmPassword = "Passwords must match.";
+					if (email.value !== confirmEmail.value) errors.confirmEmail = "Emails must match.";
+					const errorKeys = Object.keys(errors);
+					if (errorKeys.length)
+						setForm(form => {
+							let _form = {};
+							for (let i = 0; i < errorKeys.length; i++) {
+								const field = errorKeys[i];
+								_form[field] = { ...form[field], error: errors[field] };
+							}
+							return { ...form, ..._form };
+						});
+					else {
+						const { value, name } = photoURL;
+						let _photoURL;
+						handlePromise(
+							firebase
+								.storage()
+								.ref()
+								.child(name)
+								.putString(value, "data_url")
+								.then(({ ref }) => ref.getDownloadURL())
+								.then(value => (_photoURL = value))
+								.then(_ =>
+									firebase.auth().createUserWithEmailAndPassword(email.value, password.value)
+								)
+								.then(({ user }) => {
+									user.updateProfile({ photoURL: _photoURL });
+									return user.uid;
+								})
+								.then(uid => {
+									let data = {};
+									const restKeys = ["email", "photoURL", ...Object.keys(rest)];
+									for (let i = 0; i < restKeys.length; i++) {
+										let field = restKeys[i];
+										data[field] = form[field].value;
+									}
+									data.DOB = form.DOB.value.toJSON();
+									return firebase
+										.database()
+										.ref(`users/${uid}`)
+										.set(data)
+										.then(_ => true);
+								}),
+							toggleSend.toggle,
+							setSnackbar
+						).then(bool => {
+							console.log(bool);
+							if (bool) {
+								setForm(profile);
+								navigate("/");
+							}
+						});
+					}
 				}
 			},
-			[form, toggleSend.toggle]
+			[form, toggleSend.toggle, setSnackbar, toggleSend.toggled]
 		),
 		{
 			DOB: { value, error },
 			photoURL
 		} = form;
 
-	useTitle("Jetpack - Sign Up");
+	useTitle("MyCake - Sign Up");
 
 	return (
-		<main className="main-profile">
-			<div className="container">
+		<main>
+			<div className="container profile">
 				<Grid container spacing={3} justify="center">
 					<Grid item sm={6}>
 						<GridForm onSubmit={handleSubmit}>
 							<Grid item sm={12} component="h1">
 								Sign Up
 							</Grid>
-							<RenderInput {...handleName("email")} type="email" />
+							<RenderInput autoFocus {...handleName("email")} type="email" />
 							<RenderInput {...handleName("confirmEmail")} type="email" />
 							<Grid item xs={12} sm={6}>
 								<img

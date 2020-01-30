@@ -1,7 +1,3 @@
-.field-update p {
-	font-weight: 500;
-	padding-left: 10px;
-}
 .field-update > div {
 	justify-content: flex-end;
 	display: flex;
@@ -11,9 +7,14 @@
 .field-update i {
 	cursor: pointer;
 }
-.field-active {
+
+.field-label {
+	font-weight: 500;
+	padding-left: 10px;
+}
+.field-inactive {
 	border-color: transparent !important;
 }
-.field-active:hover {
+.field-inactive:hover {
 	background-color: lightgray !important;
 }

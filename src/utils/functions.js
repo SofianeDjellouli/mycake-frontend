@@ -1,4 +1,5 @@
 import { createContext } from "react";
+import { isDev } from "./";
 
 export const GlobalContext = createContext({});
 
@@ -23,14 +24,19 @@ export const debounce = func => {
 	};
 };
 
-export const handlePromise = (promise, setLoading) => {
+export const handlePromise = (promise, setLoading, setSnackbar) => {
 	if (setLoading) setLoading(true);
 	window.document.body.style.cursor = "progress";
-	return promise.then(e => {
-		if (setLoading) setLoading(false);
-		window.document.body.style.cursor = "";
-		return e;
-	});
+	return promise
+		.catch(e => {
+			if (isDev) console.error(e);
+			if (setSnackbar) setSnackbar({ message: e.message });
+		})
+		.then(e => {
+			if (setLoading) setLoading(false);
+			window.document.body.style.cursor = "";
+			return e;
+		});
 };
 
 export const handleFiles = event =>

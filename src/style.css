@@ -128,9 +128,7 @@ h1 {
 	margin: 0 auto;
 	display: block;
 }
-.main-profile {
+.profile {
 	padding-bottom: 50px;
 }
-.main-profile .spinner-wrapper {
-	height: calc(100% - 50px);
-}
+

@@ -24,3 +24,5 @@ for (let i = 0; i < fields.length; i++) {
 profile.DOB = { ...defaultField, value: null, label: "Date of birth" };
 
 export { profile };
+
+export const isDev = process.env.NODE_ENV === "development";

@@ -1,11 +1,12 @@
-import React, { memo, useCallback, useState, useContext } from "react";
+import React, { memo, useCallback, useState, useContext, useEffect } from "react";
 import { Grid, ClickAwayListener, FormHelperText } from "@material-ui/core";
+import { DatePicker } from "@material-ui/pickers";
 import { Tooltip } from "../";
 import { useToggle, handlePromise, firebase, GlobalContext } from "../../utils";
 import "./style.css";
 
 const _FieldUpdate = ({ onSubmit, value, name, setData, label, sm = 6 }) => {
-	const { user: { uid = "" } = {} } = useContext(GlobalContext),
+	const { user: { uid = "" } = {}, setSnackbar } = useContext(GlobalContext),
 		[_value, set_Value] = useState(value),
 		[currentValue, setCurrentValue] = useState(_value),
 		[error, setError] = useState(""),
@@ -18,7 +19,7 @@ const _FieldUpdate = ({ onSubmit, value, name, setData, label, sm = 6 }) => {
 		handleName = useCallback(
 			_ => ({
 				onChange,
-				className: `form-input${toggleActive.toggled ? "" : " field-active"}`,
+				className: `form-input${toggleActive.toggled ? "" : " field-inactive"}`,
 				name,
 				"aria-label": name,
 				value: currentValue,
@@ -48,18 +49,41 @@ const _FieldUpdate = ({ onSubmit, value, name, setData, label, sm = 6 }) => {
 										.database()
 										.ref(`users/${uid}`)
 										.update({ [name]: currentValue })
-										.then(toggleActive.toggle),
-							toggleLoading.toggle
-						);
+										.then(_ => true),
+							toggleLoading.toggle,
+							setSnackbar
+						).then(bool => {
+							if (bool) toggleActive.toggle();
+							else handleCancel();
+						});
 					}
 				} else toggleActive.toggle();
 			},
-			[toggleActive, _value, currentValue, uid, name, toggleLoading.toggle, onSubmit]
+			[
+				toggleActive,
+				handleCancel,
+				setSnackbar,
+				_value,
+				currentValue,
+				uid,
+				name,
+				toggleLoading.toggle,
+				onSubmit
+			]
 		);
 
+	useEffect(
+		_ => {
+			if (value) {
+				set_Value(value);
+				setCurrentValue(value);
+			}
+		},
+		[value]
+	);
 	return (
-		<Grid item {...{ sm }} className="field-update">
-			<p>{label}</p>
+		<Grid item {...{ sm }} className="field-update" xs={12}>
+			<p className="field-label">{label}</p>
 			<ClickAwayListener
 				onClickAway={handleConfirm}
 				{...(!toggleActive.toggled && { mouseEvent: false, touchEvent: false })}>
@@ -87,4 +111,52 @@ const _FieldUpdate = ({ onSubmit, value, name, setData, label, sm = 6 }) => {
 	);
 };
 
+const _DOBUpdate = ({ value }) => {
+	const { user: { uid = "" } = {}, setSnackbar } = useContext(GlobalContext),
+		[DOB, setDOB] = useState(value),
+		toggleLoading = useToggle(),
+		handleDOB = useCallback(
+			value => {
+				setDOB(value);
+				handlePromise(
+					firebase
+						.database()
+						.ref(`users/${uid}`)
+						.update({ DOB: value.toJSON() }),
+					toggleLoading.toggle,
+					setSnackbar
+				);
+			},
+			[toggleLoading.toggle, uid, setSnackbar]
+		);
+	return (
+		<Grid item sm={6} xs={12}>
+			<p className="field-label">Date of birth</p>
+			<div className="input-wrapper">
+				<DatePicker
+					fullWidth
+					disableFuture
+					openTo="year"
+					format="DD/MM/YYYY"
+					emptyLabel="Date of birth"
+					views={["year", "month", "date"]}
+					value={DOB}
+					onChange={handleDOB}
+					disabled={toggleLoading.toggled}
+					inputProps={{
+						"aria-label": "Date of birth",
+						className: "form-input field-inactive"
+					}}
+					InputProps={{
+						disableUnderline: true,
+						...(!value && { style: { color: "gray" } })
+					}}
+				/>
+				{toggleLoading.toggled && <i className="fas fa-circle-notch fa-spin right" />}
+			</div>
+		</Grid>
+	);
+};
+
 export const FieldUpdate = memo(_FieldUpdate);
+export const DOBUpdate = memo(_DOBUpdate);

@@ -64,7 +64,7 @@ const SecurityCheck = _ => {
 			},
 			[form, toggleSend.toggle]
 		);
-	useTitle("Jetpack - Security Check");
+	useTitle("MyCake - Security Check");
 
 	return (
 		<main>

@@ -7,7 +7,7 @@ import "./style.css";
 const Home = _ => {
 	const { user } = useContext(GlobalContext),
 		handleSignUp = useCallback(_ => navigate("/sign-up"), []);
-	useTitle("Jetpack - Home");
+	useTitle("MyCake - Home");
 
 	return (
 		<main>
@@ -29,28 +29,28 @@ const Home = _ => {
 			</section>
 			<section className="features">
 				<div className="container">
-					<h1>HERE'S HOW JETCAKE WORKS</h1>
+					<h1>HERE'S HOW MYCAKE WORKS</h1>
 					<Grid container spacing={4} className="features-grid">
 						{[
 							{
 								title: "Interviews",
 								text:
-									"Apply here at JetCake. You will go through a challenging yet friendly sets of interviews. Top candidates will be invited to Step 2"
+									"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
 							},
 							{
 								title: "Coaching",
 								text:
-									"You will be coached through a series of real-world projects that will hone your skills in effective communication, accurate estimation, agile methodologies, product concepts, and more"
+									"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
 							},
 							{
 								title: "Job Placement",
 								text:
-									"If you complete all projects successfully, you will be connected with top tech companies at JetCake Network"
+									"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
 							},
 							{
 								title: "Ongoing Support",
 								text:
-									"You are not alone while on a job or assignment, as you always have access to JetCake Developer Network for ongoing support, learning, and growth"
+									"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
 							}
 						].map(({ title, text }, i) => (
 							<Grid item key={title} sm={6}>

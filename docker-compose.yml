@@ -1,7 +1,7 @@
 version: "3.3"
 
 services:
-  jetpack-frontend:
+  mycake-frontend:
     image: pagespeed/nginx-pagespeed
     ports:
       - "8080:80"
