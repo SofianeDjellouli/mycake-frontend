@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useContext } from "react";
+import React, { useCallback, useState, useContext, useEffect } from "react";
 import { useTitle, navigate } from "hookrouter";
 import { Grid, Button, FormHelperText } from "@material-ui/core";
 import { DatePicker } from "@material-ui/pickers";
@@ -11,9 +11,11 @@ import {
 	GlobalContext
 } from "../../utils";
 import { RenderInput, RenderPassword, RenderPhone, GridForm } from "../";
+import "./style.css";
 
 const SignUp = _ => {
 	const { setSnackbar } = useContext(GlobalContext),
+		[APIerror, setAPIError] = useState(""),
 		[form, setForm] = useState(profile),
 		onChange = useCallback(
 			({ target: { name, value } }) =>
@@ -98,9 +100,11 @@ const SignUp = _ => {
 										.then(_ => true);
 								}),
 							toggleSend.toggle,
-							setSnackbar
+							({ message }) => {
+								setSnackbar({ message });
+								setAPIError(message);
+							}
 						).then(bool => {
-							console.log(bool);
 							if (bool) {
 								setForm(profile);
 								navigate("/");
@@ -118,9 +122,17 @@ const SignUp = _ => {
 
 	useTitle("MyCake - Sign Up");
 
+	useEffect(
+		_ => _ => {
+			setForm(profile);
+			setAPIError("");
+		},
+		[]
+	);
+
 	return (
 		<main>
-			<div className="container profile">
+			<div className="container profile sign-up">
 				<Grid container spacing={3} justify="center">
 					<Grid item sm={6}>
 						<GridForm onSubmit={handleSubmit}>
@@ -178,9 +190,9 @@ const SignUp = _ => {
 							<Grid item sm={12} component="h4">
 								Security questions
 							</Grid>
-							<RenderInput {...handleName("q1")} sm={12} />
-							<RenderInput {...handleName("q2")} sm={12} />
-							<RenderInput {...handleName("q3")} sm={12} />
+							{["q1", "q2", "q3"].map(e => (
+								<RenderInput key={e} {...handleName(e)} sm={12} />
+							))}
 							<div className="justify-center">
 								<Button
 									disabled={toggleSend.toggled}
@@ -191,6 +203,7 @@ const SignUp = _ => {
 									Up
 								</Button>
 							</div>
+							{APIerror && <FormHelperText error>{APIerror}</FormHelperText>}
 						</GridForm>
 					</Grid>
 				</Grid>
