@@ -10,3 +10,4 @@ render(
 	</Suspense>,
 	document.getElementById("root")
 );
+

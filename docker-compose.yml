@@ -2,7 +2,7 @@ version: "3.3"
 
 services:
   jetpack-frontend:
-    image: nginx #pagespeed/nginx-pagespeed
+    image: pagespeed/nginx-pagespeed
     ports:
       - "8080:80"
     volumes:

@@ -2,13 +2,13 @@ import React, { Suspense, useState, useCallback, Fragment, useEffect } from "rea
 import { MuiPickersUtilsProvider as DatePickerContext } from "@material-ui/pickers";
 import utils from "@date-io/dayjs";
 import { useRoutes, useRedirect } from "hookrouter";
-import { Header, Snackbar, fallback, Footer } from "./components";
+import { Header, Snackbar, fallback, Footer, Spinner } from "./components";
 import { routes as _routes, useToggle, GlobalContext, loadStyle, firebase } from "./utils";
 import "./style.css";
 
 const App = _ => {
   const [snackbar, setSnackbar] = useState({}),
-    [user, setUser] = useState(undefined),
+    [user, setUser] = useState("loading"),
     toggleLoad = useToggle(),
     closeSnackbar = useCallback(_ => setSnackbar(({ type }) => ({ message: "", type })), []);
 
@@ -50,15 +50,16 @@ const App = _ => {
   useEffect(_ => {
     firebase.auth().onAuthStateChanged(user => setUser(user || undefined));
   }, []);
+
   return toggleLoad.toggled ? (
     <Fragment>
       <GlobalContext.Provider value={{ setSnackbar, user }}>
         <Header />
-        <Suspense {...{ fallback }}>
+        <Suspense fallback={<main>{Spinner()}</main>}>
           <DatePickerContext {...{ utils }}>{routes}</DatePickerContext>
         </Suspense>
-        <Footer />
       </GlobalContext.Provider>
+      <Footer />
       <Snackbar {...{ ...snackbar, closeSnackbar }} />
     </Fragment>
   ) : (

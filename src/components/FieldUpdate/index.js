@@ -1,21 +1,27 @@
-import React, { memo, useCallback, useState, useEffect } from "react";
-import { Grid, ClickAwayListener } from "@material-ui/core";
+import React, { memo, useCallback, useState, useContext } from "react";
+import { Grid, ClickAwayListener, FormHelperText } from "@material-ui/core";
 import { Tooltip } from "../";
-import { useToggle } from "../../utils";
+import { useToggle, handlePromise, firebase, GlobalContext } from "../../utils";
 import "./style.css";
 
-const _FieldUpdate = ({ onSubmit, value, name, label, sm = 6 }) => {
-	console.log(value);
-	const [currentValue, setCurrentValue] = useState({ value, error: "" }),
+const _FieldUpdate = ({ onSubmit, value, name, setData, label, sm = 6 }) => {
+	const { user: { uid = "" } = {} } = useContext(GlobalContext),
+		[_value, set_Value] = useState(value),
+		[currentValue, setCurrentValue] = useState(_value),
+		[error, setError] = useState(""),
 		toggleActive = useToggle(),
-		onChange = useCallback(({ target: { value } }) => setCurrentValue({ value, error: "" }), []),
+		toggleLoading = useToggle(),
+		onChange = useCallback(({ target: { value } }) => {
+			setCurrentValue(value);
+			setError("");
+		}, []),
 		handleName = useCallback(
 			_ => ({
 				onChange,
 				className: `form-input${toggleActive.toggled ? "" : " field-active"}`,
 				name,
 				"aria-label": name,
-				value: currentValue.value,
+				value: currentValue,
 				...(!toggleActive.toggled && { onClick: toggleActive.toggle })
 			}),
 			[currentValue, name, onChange, toggleActive.toggle, toggleActive.toggled]
@@ -23,23 +29,33 @@ const _FieldUpdate = ({ onSubmit, value, name, label, sm = 6 }) => {
 		handleCancel = useCallback(
 			_ => {
 				toggleActive.toggle();
-				setCurrentValue({ value, error: "" });
+				setCurrentValue(_value);
+				setError("");
 			},
-			[toggleActive, value]
+			[toggleActive, _value]
 		),
 		handleConfirm = useCallback(
-			_ => {
-				//if (value !== currentValue)
-				toggleActive.toggle();
+			e => {
+				e.preventDefault();
+				if (_value !== currentValue) {
+					if (!currentValue) setError("This field is required");
+					else {
+						set_Value(currentValue);
+						handlePromise(
+							onSubmit
+								? onSubmit(currentValue)
+								: firebase
+										.database()
+										.ref(`users/${uid}`)
+										.update({ [name]: currentValue })
+										.then(toggleActive.toggle),
+							toggleLoading.toggle
+						);
+					}
+				} else toggleActive.toggle();
 			},
-			[toggleActive /*value, currentValue*/]
+			[toggleActive, _value, currentValue, uid, name, toggleLoading.toggle, onSubmit]
 		);
-	useEffect(
-		_ => {
-			console.log(currentValue);
-		},
-		[currentValue]
-	);
 
 	return (
 		<Grid item {...{ sm }} className="field-update">
@@ -47,13 +63,18 @@ const _FieldUpdate = ({ onSubmit, value, name, label, sm = 6 }) => {
 			<ClickAwayListener
 				onClickAway={handleConfirm}
 				{...(!toggleActive.toggled && { mouseEvent: false, touchEvent: false })}>
-				<input readOnly={!toggleActive.toggled} {...handleName()} />
+				<form onSubmit={handleConfirm}>
+					<div className="input-wrapper">
+						<input readOnly={!toggleActive.toggled} {...handleName()} />
+						{toggleLoading.toggled && <i className="fas fa-circle-notch fa-spin right" />}
+					</div>
+				</form>
 			</ClickAwayListener>
-			{toggleActive.toggled && (
+			{toggleActive.toggled && _value !== currentValue && (
 				<div>
 					<Tooltip
 						title="Cancel"
-						children={<i onClick={handleCancel} className="fas fa-ban right" />}
+						children={<i onClick={handleCancel} className="fas fa-times-circle right" />}
 					/>
 					<Tooltip
 						title="Confirm"
@@ -61,6 +82,7 @@ const _FieldUpdate = ({ onSubmit, value, name, label, sm = 6 }) => {
 					/>
 				</div>
 			)}
+			{error && <FormHelperText error>{error}</FormHelperText>}
 		</Grid>
 	);
 };

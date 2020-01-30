@@ -1,0 +1,13 @@
+footer {
+	padding-top: 20px !important;
+	padding-bottom: 20px !important;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+footer i {
+	font-size: 3em;
+	cursor: pointer;
+	color: darkslategrey;
+}

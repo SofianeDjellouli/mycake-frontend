@@ -48,10 +48,12 @@ const Login = _ => {
 
 	return (
 		<main className="container">
-			<h2>Login</h2>
 			<Grid container spacing={3} justify="center">
 				<Grid item sm={6}>
 					<GridForm onSubmit={handleSubmit}>
+						<Grid item sm={12} component="h1">
+							Login
+						</Grid>
 						<RenderInput {...handleName("email")} type="email" sm={12} />
 						<RenderPassword {...handleName("password")} sm={12} />
 						<div className="justify-center">
@@ -64,7 +66,7 @@ const Login = _ => {
 								Login
 							</Button>
 						</div>
-						<p>
+						<p className="login-bottom-links">
 							<A href="/sign-up">Don't have an account? Sign up</A>
 							<br />
 							<br />

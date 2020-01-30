@@ -1,5 +1,5 @@
 import React, { memo, useContext, useCallback, useState } from "react";
-import { A, navigate } from "hookrouter";
+import { navigate } from "hookrouter";
 import {
 	IconButton,
 	Button,
@@ -13,7 +13,7 @@ import { GlobalContext, firebase, useMobile } from "../../utils";
 import "./style.css";
 
 const _Header = _ => {
-	const { user: { photoURL = "" } = {} } = useContext(GlobalContext),
+	const { user } = useContext(GlobalContext),
 		[anchorEl, setAnchorEl] = useState(null),
 		handleMenu = useCallback(({ currentTarget }) => setAnchorEl(currentTarget), []),
 		handleClose = useCallback(_ => setAnchorEl(null), []),
@@ -25,29 +25,33 @@ const _Header = _ => {
 					.then(_ => navigate("/")),
 			[]
 		),
-		isMobile = useMobile();
+		isMobile = useMobile(),
+		handleHome = useCallback(_ => navigate("/"), []),
+		handleLogin = useCallback(_ => navigate("/login"), []),
+		hasUser = typeof user === "object";
 	return (
 		<header>
 			<div id="fixed-header">
 				<div className="container">
-					<A href="/">JetCake</A>
-					{photoURL ? (
-						isMobile ? (
-							<IconButton className="end-right" onClick={handleMenu}>
-								<i className="fas fa-bars" />
-							</IconButton>
+					<h1 onClick={handleHome}>JetCake</h1>
+					{user !== "loading" &&
+						(hasUser ? (
+							isMobile ? (
+								<IconButton className="end-right" onClick={handleMenu}>
+									<i className="fas fa-bars" />
+								</IconButton>
+							) : (
+								<div className="end-right align-center">
+									Welcome
+									<Avatar className="left pointer" onClick={handleMenu} src={user.photoURL} />
+								</div>
+							)
 						) : (
-							<div className="end-right align-center">
-								Welcome
-								<Avatar className="left pointer" onClick={handleMenu} src={photoURL} />
-							</div>
-						)
-					) : (
-						<A href="/login" className="end-right">
-							<Button>Login</Button>
-						</A>
-					)}
-					{photoURL && (
+							<Button variant="contained" onClick={handleLogin} className="end-right">
+								Login
+							</Button>
+						))}
+					{hasUser && (
 						<Menu
 							disableScrollLock
 							className="header-menu"

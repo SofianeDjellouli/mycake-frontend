@@ -9,6 +9,7 @@ header {
 	width: 100%;
 	background: var(--primary);
 	height: 59px;
+	color: white;
 }
 @media (min-width: 768px) {
 	header {
@@ -27,7 +28,7 @@ header {
 	align-items: center;
 	height: 100%;
 }
-#fixed-header .container > a {
+#fixed-header .container > h1 {
 	margin-right: auto;
 	cursor: pointer;
 }

@@ -46,11 +46,17 @@ const SecurityCheck = _ => {
 					handlePromise(
 						firebase
 							.database()
-							.ref(`users/${form.email.value}`)
-							.once("value")
-							.then(snapshot => {
-								let data = snapshot.val(),
-									dataKeys = Object.keys(data);
+							.ref("users")
+							.orderByChild("email")
+							.equalTo(form.email.value)
+							.on("child_added", snapshot => {
+								/*const data = snapshot.val(),
+									dataKeys = Object.keys(data),
+									{ email, ..._form } = form;
+								for (let i = 0; i < dataKeys.length; i++) {
+									let key = dataKeys[i];
+									if (_form[key].value !== data[key]) throw new Error("Incorrect answer");
+								}*/
 							}),
 						toggleSend.toggle
 					).then(_ => navigate("/profile"));

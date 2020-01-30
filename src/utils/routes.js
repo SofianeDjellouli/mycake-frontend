@@ -11,5 +11,6 @@ export const routes = {
 	"/login": _ => <Login />,
 	"/sign-up": _ => <SignUp />,
 	"/profile": _ => <Profile />,
-	"/security-check": _ => <SecurityCheck />
+	"/security-check": _ => <SecurityCheck />,
+	"/:random*": _ => <Home />
 };

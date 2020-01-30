@@ -4,7 +4,6 @@ import { Grid, Button, FormHelperText } from "@material-ui/core";
 import { DatePicker } from "@material-ui/pickers";
 import { useToggle, handleFiles, firebase, handlePromise, profile } from "../../utils";
 import { RenderInput, RenderPassword, RenderPhone, GridForm } from "../";
-import "./style.css";
 
 const SignUp = _ => {
 	const [form, setForm] = useState(profile),
@@ -43,7 +42,7 @@ const SignUp = _ => {
 				const formKeys = Object.keys(form);
 				for (let i = 0; i < formKeys.length; i++)
 					if (!form[formKeys[i]].value) errors[formKeys[i]] = "This field is required";
-				const { password, confirmPassword, email, confirmEmail } = form;
+				const { password, confirmPassword, email, confirmEmail, photoURL, ...rest } = form;
 				if (password.value !== confirmPassword.value)
 					errors.confirmPassword = "Passwords must match.";
 				if (email.value !== confirmEmail.value) errors.confirmEmail = "Emails must match.";
@@ -58,8 +57,8 @@ const SignUp = _ => {
 						return { ...form, ..._form };
 					});
 				else {
-					const { value, name } = form.photoURL;
-					let photoURL;
+					const { value, name } = photoURL;
+					let _photoURL;
 					handlePromise(
 						firebase
 							.storage()
@@ -67,35 +66,26 @@ const SignUp = _ => {
 							.child(name)
 							.putString(value, "data_url")
 							.then(({ ref }) => ref.getDownloadURL())
-							.then(value => (photoURL = value))
+							.then(value => (_photoURL = value))
 							.then(_ =>
 								firebase.auth().createUserWithEmailAndPassword(email.value, password.value)
 							)
 							.then(({ user }) => {
-								user.updateProfile({ photoURL });
+								user.updateProfile({ photoURL: _photoURL });
 								return user.uid;
 							})
 							.then(uid => {
 								let data = {};
-								const fields = [
-									"DOB",
-									"addressLine1",
-									"addressLine2",
-									"city",
-									"state",
-									"country",
-									"phoneNumber",
-									"email"
-								];
-								for (let i = 0; i < fields.length; i++) {
-									let field = fields[i];
+								const restKeys = Object.keys(rest);
+								for (let i = 0; i < restKeys.length; i++) {
+									let field = restKeys[i];
 									data[field] = form[field].value;
 								}
 								data.DOB = form.DOB.value.toJSON();
 								return firebase
 									.database()
 									.ref(`users/${uid}`)
-									.set({ ...data, photoURL });
+									.set(data);
 							}),
 						toggleSend.toggle
 					);
@@ -107,15 +97,18 @@ const SignUp = _ => {
 			DOB: { value, error },
 			photoURL
 		} = form;
-	console.log(form);
+
 	useTitle("Jetpack - Sign Up");
+
 	return (
-		<main>
-			<h2>Sign Up</h2>
+		<main className="main-profile">
 			<div className="container">
 				<Grid container spacing={3} justify="center">
 					<Grid item sm={6}>
 						<GridForm onSubmit={handleSubmit}>
+							<Grid item sm={12} component="h1">
+								Sign Up
+							</Grid>
 							<RenderInput {...handleName("email")} type="email" />
 							<RenderInput {...handleName("confirmEmail")} type="email" />
 							<Grid item xs={12} sm={6}>

@@ -9,6 +9,7 @@
 	align-items: center;
 	flex-direction: column;
 	text-align: center;
+	color: white;
 }
 .hero img {
 	position: absolute;
@@ -33,6 +34,13 @@
 .features {
 	text-align: center;
 }
+.features h1 {
+	font-size: 2.5em;
+}
 .features img {
 	border-radius: 100px;
+}
+.features-grid {
+	width: inherit;
+	margin: initial;
 }
