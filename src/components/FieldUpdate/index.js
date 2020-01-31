@@ -129,6 +129,12 @@ const _DOBUpdate = ({ value }) => {
 			},
 			[toggleLoading.toggle, uid, setSnackbar]
 		);
+	useEffect(
+		_ => {
+			if (value) setDOB(value);
+		},
+		[value]
+	);
 	return (
 		<Grid item sm={6} xs={12}>
 			<p className="field-label">Date of birth</p>
