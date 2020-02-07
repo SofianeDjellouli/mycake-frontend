@@ -63,8 +63,14 @@ const Login = _ => {
 						<Grid item sm={12} component="h1">
 							Login
 						</Grid>
-						<RenderInput autoFocus {...handleName("email")} type="email" sm={12} />
-						<RenderPassword {...handleName("password")} sm={12} />
+						<RenderInput
+							autoFocus
+							{...handleName("email")}
+							type="email"
+							sm={12}
+							placeholder="Email"
+						/>
+						<RenderPassword {...handleName("password")} sm={12} placeholder="Password" />
 						<div className="justify-center">
 							<Button
 								type="submit"

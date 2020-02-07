@@ -146,17 +146,15 @@ const Profile = _ => {
 								<FieldUpdate {...handleName("email")} onSubmit={handleEmail} />
 								<FieldUpdate {...handleName("phoneNumber")} />
 								<DOBUpdate {...{ value }} />
-								<FieldUpdate {...handleName("addressLine1")} />
-								<FieldUpdate {...handleName("addressLine2")} />
-								<FieldUpdate {...handleName("city")} />
-								<FieldUpdate {...handleName("state")} />
-								<FieldUpdate {...handleName("country")} />
+								{["addressLine1", "addressLine2", "city", "state", "country"].map(e => (
+									<FieldUpdate {...handleName(e)} key={e} />
+								))}
 								<Grid item sm={12} component="h3">
 									Security questions
 								</Grid>
-								<FieldUpdate {...handleName("q1")} sm={12} />
-								<FieldUpdate {...handleName("q2")} sm={12} />
-								<FieldUpdate {...handleName("q3")} sm={12} />
+								{["q1", "q2", "q3"].map(e => (
+									<FieldUpdate {...handleName(e)} sm={12} key={e} />
+								))}
 							</Grid>
 						</Grid>
 					</Grid>
