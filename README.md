@@ -2,7 +2,7 @@ This project was created with Create React App, Material-UI and Firebase.
 
 Time of completion: a few hours.
 
-[Live version](#https://sofianefrontend.firebaseapp.com)
+Live version: https://sofianefrontend.firebaseapp.com
 
 # How to run it
 
