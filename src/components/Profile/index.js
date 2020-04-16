@@ -8,16 +8,16 @@ import {
 	profile,
 	handlePromise,
 	useToggle,
-	handleFiles
+	handleFiles,
 } from "../../utils";
 import { FieldUpdate, Spinner, DOBUpdate } from "../";
 import "./style.css";
 
-const Profile = _ => {
+const Profile = (_) => {
 	const { user: { uid } = {}, setUser, setSnackbar } = useContext(GlobalContext),
 		[data, setData] = useState(profile),
 		handleName = useCallback(
-			name => {
+			(name) => {
 				const { value, label } = data[name];
 				return { value, label, name, setData };
 			},
@@ -25,47 +25,39 @@ const Profile = _ => {
 		),
 		toggleImageLoading = useToggle(),
 		handleFile = useCallback(
-			e =>
-				handleFiles(e).then(([{ name, file }]) => {
-					setData(({ photoURL, ...data }) => ({
-						...data,
-						photoURL: { error: "", value: file, name }
-					}));
-					setUser(user => ({ ...user, photoURL: file }));
-					handlePromise(
-						firebase
-							.storage()
-							.ref()
-							.child(name)
-							.putString(file, "data_url")
-							.then(({ ref }) => ref.getDownloadURL())
-							.then(photoURL => {
-								firebase.auth().currentUser.updateProfile({ photoURL });
-								return photoURL;
-							})
-							.then(photoURL =>
-								firebase
-									.database()
-									.ref(`users/${uid}`)
-									.update({ photoURL })
-							),
-						toggleImageLoading.toggle,
-						setSnackbar
-					);
-				}),
+			(e) =>
+				handleFiles(e)
+					.then(([{ name, file }]) => {
+						setData(({ photoURL, ...data }) => ({
+							...data,
+							photoURL: { error: "", value: file, name },
+						}));
+						setUser((user) => ({ ...user, photoURL: file }));
+						handlePromise(
+							firebase
+								.storage()
+								.ref()
+								.child(name)
+								.putString(file, "data_url")
+								.then(({ ref }) => ref.getDownloadURL())
+								.then((photoURL) => {
+									firebase.auth().currentUser.updateProfile({ photoURL });
+									return photoURL;
+								})
+								.then((photoURL) => firebase.database().ref(`users/${uid}`).update({ photoURL })),
+							toggleImageLoading.toggle,
+							setSnackbar
+						);
+					})
+					.catch(window.alert),
 			[toggleImageLoading.toggle, uid, setUser, setSnackbar]
 		),
 		handleEmail = useCallback(
-			email =>
+			(email) =>
 				firebase
 					.auth()
 					.currentUser.updateEmail(email)
-					.then(_ =>
-						firebase
-							.database()
-							.ref(`users/${uid}`)
-							.update({ email })
-					),
+					.then((_) => firebase.database().ref(`users/${uid}`).update({ email })),
 			[uid]
 		),
 		/*handlePassword = useCallback(
@@ -75,18 +67,18 @@ const Profile = _ => {
 		toggleLoading = useToggle(),
 		{
 			photoURL,
-			DOB: { value }
+			DOB: { value },
 		} = data;
 
 	useEffect(
-		_ => {
+		(_) => {
 			if (uid)
 				handlePromise(
 					firebase
 						.database()
 						.ref(`users/${uid}`)
 						.once("value")
-						.then(snapshot => {
+						.then((snapshot) => {
 							let data = snapshot.val(),
 								dataKeys = Object.keys(data),
 								_profile = { ...profile };
@@ -146,13 +138,13 @@ const Profile = _ => {
 								<FieldUpdate {...handleName("email")} onSubmit={handleEmail} />
 								<FieldUpdate {...handleName("phoneNumber")} />
 								<DOBUpdate {...{ value }} />
-								{["addressLine1", "addressLine2", "city", "state", "country"].map(e => (
+								{["addressLine1", "addressLine2", "city", "state", "country"].map((e) => (
 									<FieldUpdate {...handleName(e)} key={e} />
 								))}
 								<Grid item sm={12} component="h3">
 									Security questions
 								</Grid>
-								{["q1", "q2", "q3"].map(e => (
+								{["q1", "q2", "q3"].map((e) => (
 									<FieldUpdate {...handleName(e)} sm={12} key={e} />
 								))}
 							</Grid>

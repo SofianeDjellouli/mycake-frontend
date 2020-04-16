@@ -8,122 +8,115 @@ import {
 	firebase,
 	handlePromise,
 	profile,
-	GlobalContext
+	GlobalContext,
 } from "../../utils";
 import { RenderInput, RenderPassword, RenderPhone, GridForm } from "../";
 import "./style.css";
 
-const SignUp = _ => {
+const SignUp = (_) => {
 	const { setSnackbar } = useContext(GlobalContext),
 		[APIerror, setAPIError] = useState(""),
 		[form, setForm] = useState(profile),
 		onChange = useCallback(
 			({ target: { name, value } }) =>
-				setForm(form => ({ ...form, [name]: { ...form[name], value, error: "" } })),
+				setForm((form) => ({ ...form, [name]: { ...form[name], value, error: "" } })),
 			[]
 		),
 		toggleSend = useToggle(),
 		handleName = useCallback(
-			name => ({
+			(name) => ({
 				onChange,
 				className: "form-input",
 				name,
 				"aria-label": name,
 				placeholder: form[name].label,
-				...form[name]
+				...form[name],
 			}),
 			[form, onChange]
 		),
 		handleFile = useCallback(
-			e =>
-				handleFiles(e).then(([{ name, file }]) =>
-					setForm(({ photoURL, ...form }) => ({
-						...form,
-						photoURL: { error: "", value: file, name }
-					}))
-				),
+			(e) =>
+				handleFiles(e)
+					.then(([{ name, file }]) =>
+						setForm(({ photoURL, ...form }) => ({
+							...form,
+							photoURL: { error: "", value: file, name },
+						}))
+					)
+					.catch(window.alert),
 			[]
 		),
-		handleDOB = useCallback(value => onChange({ target: { name: "DOB", value } }), [onChange]),
+		handleDOB = useCallback((value) => onChange({ target: { name: "DOB", value } }), [onChange]),
 		handleSubmit = useCallback(
-			e => {
+			(e) => {
 				e.preventDefault();
-				if (!toggleSend.toggled) {
-					let errors = {};
-					const formKeys = Object.keys(form);
-					for (let i = 0; i < formKeys.length; i++)
-						if (!form[formKeys[i]].value) errors[formKeys[i]] = "This field is required";
-					const { password, confirmPassword, email, confirmEmail, photoURL, ...rest } = form;
-					if (password.value !== confirmPassword.value)
-						errors.confirmPassword = "Passwords must match.";
-					if (email.value !== confirmEmail.value) errors.confirmEmail = "Emails must match.";
-					const errorKeys = Object.keys(errors);
-					if (errorKeys.length)
-						setForm(form => {
-							let _form = {};
-							for (let i = 0; i < errorKeys.length; i++) {
-								const field = errorKeys[i];
-								_form[field] = { ...form[field], error: errors[field] };
-							}
-							return { ...form, ..._form };
-						});
-					else {
-						const { value, name } = photoURL;
-						let _photoURL;
-						handlePromise(
-							firebase
-								.storage()
-								.ref()
-								.child(name)
-								.putString(value, "data_url")
-								.then(({ ref }) => ref.getDownloadURL())
-								.then(value => (_photoURL = value))
-								.then(_ =>
-									firebase.auth().createUserWithEmailAndPassword(email.value, password.value)
-								)
-								.then(({ user }) => {
-									user.updateProfile({ photoURL: _photoURL });
-									return user.uid;
-								})
-								.then(uid => {
-									let data = {};
-									const restKeys = ["email", "photoURL", ...Object.keys(rest)];
-									for (let i = 0; i < restKeys.length; i++) {
-										let field = restKeys[i];
-										data[field] = form[field].value;
-									}
-									data.DOB = form.DOB.value.toJSON();
-									return firebase
-										.database()
-										.ref(`users/${uid}`)
-										.set(data)
-										.then(_ => true);
-								}),
-							toggleSend.toggle,
-							({ message }) => {
-								setSnackbar({ message });
-								setAPIError(message);
-							}
-						).then(bool => {
-							if (bool) {
+				let errors = {};
+				const formKeys = Object.keys(form);
+				for (let i = 0; i < formKeys.length; i++)
+					if (!form[formKeys[i]].value) errors[formKeys[i]] = "This field is required";
+				const { password, confirmPassword, email, confirmEmail, photoURL, ...rest } = form;
+				if (password.value !== confirmPassword.value)
+					errors.confirmPassword = "Passwords must match.";
+				if (email.value !== confirmEmail.value) errors.confirmEmail = "Emails must match.";
+				const errorKeys = Object.keys(errors);
+				if (errorKeys.length)
+					setForm((form) => {
+						let _form = {};
+						for (let i = 0; i < errorKeys.length; i++) {
+							const field = errorKeys[i];
+							_form[field] = { ...form[field], error: errors[field] };
+						}
+						return { ...form, ..._form };
+					});
+				else {
+					const { value, name } = photoURL;
+					handlePromise(
+						firebase
+							.storage()
+							.ref()
+							.child(name)
+							.putString(value, "data_url")
+							.then(({ ref }) => ref.getDownloadURL())
+							.then((photoURL) =>
+								firebase
+									.auth()
+									.createUserWithEmailAndPassword(email.value, password.value)
+									.then(({ user }) => user.updateProfile({ photoURL }).then(() => user.uid))
+							)
+							.then((uid) => {
+								console.log(uid);
+								let data = {};
+								const restKeys = ["email", "photoURL", ...Object.keys(rest)];
+								for (let i = 0; i < restKeys.length; i++) {
+									let field = restKeys[i];
+									data[field] = form[field].value;
+								}
+								data.DOB = form.DOB.value.toJSON();
+								return firebase.database().ref(`users/${uid}`).set(data);
+							})
+							.then(() => {
 								setForm(profile);
 								navigate("/");
-							}
-						});
-					}
+							}),
+						toggleSend.toggle,
+						(message) => {
+							setSnackbar({ message });
+							setAPIError(message);
+						}
+					);
 				}
 			},
-			[form, toggleSend.toggle, setSnackbar, toggleSend.toggled]
+			[form, toggleSend.toggle, setSnackbar]
 		),
 		{
 			DOB: { value, error },
-			photoURL
+			photoURL,
 		} = form;
 
 	useTitle("MyCake - Sign Up");
 
 	useEffect(
-		_ => _ => {
+		() => () => {
 			setForm(profile);
 			setAPIError("");
 		},
@@ -175,22 +168,21 @@ const SignUp = _ => {
 									inputProps={{ "aria-label": "Date of birth", className: "form-input" }}
 									InputProps={{
 										disableUnderline: true,
-										...(!value && { style: { color: "gray" } })
+										...(!value && { style: { color: "gray" } }),
 									}}
 								/>
 								{!!error && <FormHelperText error>{error}</FormHelperText>}
 							</Grid>
 							<RenderInput {...handleName("addressLine1")} sm={12} />
-							<RenderInput {...handleName("addressLine2")} />
-							<RenderInput {...handleName("city")} />
-							<RenderInput {...handleName("state")} />
-							<RenderInput {...handleName("country")} />
+							{["addressLine2", "city", "state", "country"].map((e) => (
+								<RenderInput key={e} {...handleName(e)} />
+							))}
 							<RenderPassword {...handleName("password")} />
 							<RenderPassword {...handleName("confirmPassword")} />
 							<Grid item sm={12} component="h4">
 								Security questions
 							</Grid>
-							{["q1", "q2", "q3"].map(e => (
+							{["q1", "q2", "q3"].map((e) => (
 								<RenderInput key={e} {...handleName(e)} sm={12} />
 							))}
 							<div className="justify-center">

@@ -3,21 +3,27 @@ import { MuiPickersUtilsProvider as DatePickerContext } from "@material-ui/picke
 import utils from "@date-io/dayjs";
 import { useRoutes, useRedirect } from "hookrouter";
 import { Header, Snackbar, fallback, Footer, Spinner } from "./components";
-import { routes as _routes, useToggle, GlobalContext, loadStyle, firebase, isDev } from "./utils";
+import {
+  routes as _routes,
+  useToggle,
+  GlobalContext,
+  loadStyle,
+  firebase /*isDev*/,
+} from "./utils";
 import "./style.css";
 
-const App = _ => {
+const App = (_) => {
   const [snackbar, setSnackbar] = useState({}),
     [user, setUser] = useState("loading"),
     toggleLoad = useToggle(),
-    closeSnackbar = useCallback(_ => setSnackbar(({ type }) => ({ message: "", type })), []);
+    closeSnackbar = useCallback((_) => setSnackbar(({ type }) => ({ message: "", type })), []);
 
   useRedirect("/profile", user ? "/profile" : "/");
   useRedirect("/sign-up", user && user.photoURL ? "/" : "/sign-up");
 
   const routes = useRoutes(_routes);
 
-  useEffect(_ => {
+  /*  useEffect(_ => {
     class SubPromise extends Promise {
       constructor(executor) {
         super((resolve, reject) =>
@@ -35,22 +41,22 @@ const App = _ => {
       }
     }
     window.Promise = SubPromise;
-  }, []);
+  }, []);*/
 
   useEffect(
-    _ => {
+    (_) => {
       Promise.all(
         [
           "https://fonts.googleapis.com/icon?family=Material+Icons&display=block",
-          "https://fonts.googleapis.com/css?family=Montserrat:400,500,600,700&display=swap"
+          "https://fonts.googleapis.com/css?family=Montserrat:400,500,600,700&display=swap",
         ].map(loadStyle)
       ).then(toggleLoad.toggle);
     },
     [toggleLoad.toggle]
   );
 
-  useEffect(_ => {
-    firebase.auth().onAuthStateChanged(user => setUser(user || undefined));
+  useEffect((_) => {
+    firebase.auth().onAuthStateChanged((user) => setUser(user || undefined));
   }, []);
 
   return toggleLoad.toggled ? (

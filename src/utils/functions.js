@@ -3,7 +3,7 @@ import { isDev } from "./";
 
 export const GlobalContext = createContext({});
 
-export const loadStyle = e =>
+export const loadStyle = (e) =>
 	new Promise((resolve, reject) => {
 		if (document.querySelector(`[href="${e}"]`)) resolve();
 		else {
@@ -16,30 +16,30 @@ export const loadStyle = e =>
 		}
 	});
 
-export const debounce = func => {
+export const debounce = (func) => {
 	var timeout = null;
 	return (...args) => {
 		clearTimeout(timeout);
-		return new Promise(resolve => (timeout = setTimeout(() => resolve(func(...args)), 250)));
+		return new Promise((resolve) => (timeout = setTimeout(() => resolve(func(...args)), 250)));
 	};
 };
 
-export const handlePromise = (promise, setLoading, setSnackbar) => {
+export const handlePromise = (promise, setLoading, handleError) => {
 	if (setLoading) setLoading(true);
 	window.document.body.style.cursor = "progress";
 	return promise
-		.catch(e => {
+		.catch((e) => {
 			if (isDev) console.error(e);
-			if (setSnackbar) setSnackbar({ message: e.message });
+			if (handleError) handleError(e.message);
 		})
-		.then(e => {
+		.then((e) => {
 			if (setLoading) setLoading(false);
 			window.document.body.style.cursor = "";
 			return e;
 		});
 };
 
-export const handleFiles = event =>
+export const handleFiles = (event) =>
 	new Promise((resolve, reject) => {
 		event.preventDefault();
 		let data = event.dataTransfer ? [...event.dataTransfer.files] : [...event.target.files];
@@ -54,7 +54,9 @@ export const handleFiles = event =>
 				else {
 					let reader = new FileReader();
 					promises.push(
-						new Promise(resolve => (reader.onloadend = _ => resolve({ name, file: reader.result })))
+						new Promise(
+							(resolve) => (reader.onloadend = (_) => resolve({ name, file: reader.result }))
+						)
 					);
 					reader.readAsDataURL(data[i]);
 				}
