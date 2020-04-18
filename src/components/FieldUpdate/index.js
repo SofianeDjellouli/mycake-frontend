@@ -17,18 +17,18 @@ const _FieldUpdate = ({ onSubmit, value, name, setData, label, sm = 6 }) => {
 			setError("");
 		}, []),
 		handleName = useCallback(
-			_ => ({
+			(_) => ({
 				onChange,
 				className: `form-input${toggleActive.toggled ? "" : " field-inactive"}`,
 				name,
 				"aria-label": name,
 				value: currentValue,
-				...(!toggleActive.toggled && { onClick: toggleActive.toggle })
+				...(!toggleActive.toggled && { onClick: toggleActive.toggle }),
 			}),
 			[currentValue, name, onChange, toggleActive.toggle, toggleActive.toggled]
 		),
 		handleCancel = useCallback(
-			_ => {
+			(_) => {
 				toggleActive.toggle();
 				setCurrentValue(_value);
 				setError("");
@@ -36,7 +36,7 @@ const _FieldUpdate = ({ onSubmit, value, name, setData, label, sm = 6 }) => {
 			[toggleActive, _value]
 		),
 		handleConfirm = useCallback(
-			e => {
+			(e) => {
 				e.preventDefault();
 				if (_value !== currentValue) {
 					if (!currentValue) setError("This field is required");
@@ -49,10 +49,10 @@ const _FieldUpdate = ({ onSubmit, value, name, setData, label, sm = 6 }) => {
 										.database()
 										.ref(`users/${uid}`)
 										.update({ [name]: currentValue })
-										.then(_ => true),
+										.then((_) => true),
 							toggleLoading.toggle,
 							setSnackbar
-						).then(bool => {
+						).then((bool) => {
 							if (bool) toggleActive.toggle();
 							else handleCancel();
 						});
@@ -68,12 +68,12 @@ const _FieldUpdate = ({ onSubmit, value, name, setData, label, sm = 6 }) => {
 				uid,
 				name,
 				toggleLoading.toggle,
-				onSubmit
+				onSubmit,
 			]
 		);
 
 	useEffect(
-		_ => {
+		(_) => {
 			if (value) {
 				set_Value(value);
 				setCurrentValue(value);
@@ -116,13 +116,10 @@ const _DOBUpdate = ({ value }) => {
 		[DOB, setDOB] = useState(value),
 		toggleLoading = useToggle(),
 		handleDOB = useCallback(
-			value => {
+			(value) => {
 				setDOB(value);
 				handlePromise(
-					firebase
-						.database()
-						.ref(`users/${uid}`)
-						.update({ DOB: value.toJSON() }),
+					firebase.database().ref(`users/${uid}`).update({ DOB: value.toJSON() }),
 					toggleLoading.toggle,
 					setSnackbar
 				);
@@ -130,7 +127,7 @@ const _DOBUpdate = ({ value }) => {
 			[toggleLoading.toggle, uid, setSnackbar]
 		);
 	useEffect(
-		_ => {
+		(_) => {
 			if (value) setDOB(value);
 		},
 		[value]
@@ -151,11 +148,11 @@ const _DOBUpdate = ({ value }) => {
 					disabled={toggleLoading.toggled}
 					inputProps={{
 						"aria-label": "Date of birth",
-						className: "form-input field-inactive"
+						className: "form-input field-inactive",
 					}}
 					InputProps={{
 						disableUnderline: true,
-						...(!value && { style: { color: "gray" } })
+						...(!value && { style: { color: "gray" } }),
 					}}
 				/>
 				{toggleLoading.toggled && <i className="fas fa-circle-notch fa-spin right" />}

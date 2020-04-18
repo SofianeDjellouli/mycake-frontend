@@ -30,7 +30,13 @@ export const handlePromise = (promise, setLoading, handleError) => {
 	return promise
 		.catch((e) => {
 			if (isDev) console.error(e);
-			if (handleError) handleError(e.message);
+			if (handleError) {
+				const message =
+					typeof e === "string"
+						? e
+						: e.message || "An error occured. Please try again or contact us.";
+				handleError({ message });
+			}
 		})
 		.then((e) => {
 			if (setLoading) setLoading(false);
@@ -42,15 +48,15 @@ export const handlePromise = (promise, setLoading, handleError) => {
 export const handleFiles = (event) =>
 	new Promise((resolve, reject) => {
 		event.preventDefault();
-		let data = event.dataTransfer ? [...event.dataTransfer.files] : [...event.target.files];
+		let data = [...(event.dataTransfer || event.target).files]; // Handling dropping files as well
 		event.target.value = null;
 		if (data && data.length) {
 			let promises = [];
 			for (let i = 0; i < data.length; i++) {
 				let { name, type, size } = data[i];
-				if (size > 10000000) return reject("A single file can't be larger than 10 Mb.");
-				else if (!["image/png", "image/jpeg", "image/jpg", "application/pdf"].includes(type))
-					return reject("Files must be of type pdf, png, jpg or jpeg.");
+				if (size > 1000000) return reject("Image can't be larger than 1 Mb.");
+				else if (!["image/png", "image/jpeg", "image/jpg"].includes(type))
+					return reject("Files must be of type png, jpg or jpeg.");
 				else {
 					let reader = new FileReader();
 					promises.push(

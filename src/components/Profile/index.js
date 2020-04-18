@@ -26,30 +26,26 @@ const Profile = (_) => {
 		toggleImageLoading = useToggle(),
 		handleFile = useCallback(
 			(e) =>
-				handleFiles(e)
-					.then(([{ name, file }]) => {
-						setData(({ photoURL, ...data }) => ({
-							...data,
-							photoURL: { error: "", value: file, name },
-						}));
-						setUser((user) => ({ ...user, photoURL: file }));
-						handlePromise(
-							firebase
-								.storage()
-								.ref()
-								.child(name)
-								.putString(file, "data_url")
-								.then(({ ref }) => ref.getDownloadURL())
-								.then((photoURL) => {
-									firebase.auth().currentUser.updateProfile({ photoURL });
-									return photoURL;
-								})
-								.then((photoURL) => firebase.database().ref(`users/${uid}`).update({ photoURL })),
-							toggleImageLoading.toggle,
-							setSnackbar
-						);
-					})
-					.catch(window.alert),
+				handlePromise(
+					handleFiles(e)
+						.then(([{ name, file }]) => {
+							setData(({ photoURL, ...data }) => ({
+								...data,
+								photoURL: { error: "", value: file, name },
+							}));
+							setUser((user) => ({ ...user, photoURL: file }));
+							return firebase.storage().ref().child(name).putString(file, "data_url");
+						})
+						.then(({ ref }) => ref.getDownloadURL())
+						.then((photoURL) =>
+							Promise.all([
+								firebase.auth().currentUser.updateProfile({ photoURL }),
+								firebase.database().ref(`users/${uid}`).update({ photoURL }),
+							])
+						),
+					toggleImageLoading.toggle,
+					setSnackbar
+				),
 			[toggleImageLoading.toggle, uid, setUser, setSnackbar]
 		),
 		handleEmail = useCallback(
@@ -89,10 +85,11 @@ const Profile = (_) => {
 							_profile.DOB.value = dayjs(_profile.DOB.value);
 							setData(_profile);
 						}),
-					toggleLoading.toggle
+					toggleLoading.toggle,
+					setSnackbar
 				);
 		},
-		[uid, toggleLoading.toggle]
+		[uid, toggleLoading.toggle, setSnackbar]
 	);
 	useTitle("MyCake - My profile");
 

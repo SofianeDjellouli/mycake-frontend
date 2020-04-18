@@ -68,43 +68,40 @@ const SignUp = (_) => {
 						}
 						return { ...form, ..._form };
 					});
-				else {
-					const { value, name } = photoURL;
+				else
 					handlePromise(
 						firebase
-							.storage()
-							.ref()
-							.child(name)
-							.putString(value, "data_url")
-							.then(({ ref }) => ref.getDownloadURL())
-							.then((photoURL) =>
+							.auth()
+							.createUserWithEmailAndPassword(email.value, password.value)
+							.then(({ user }) =>
 								firebase
-									.auth()
-									.createUserWithEmailAndPassword(email.value, password.value)
-									.then(({ user }) => user.updateProfile({ photoURL }).then(() => user.uid))
+									.storage()
+									.ref()
+									.child(user.uid)
+									.putString(photoURL.value, "data_url")
+									.then(({ ref }) => ref.getDownloadURL())
+									.then((photoURL) => user.updateProfile({ photoURL }))
+									.then(() => {
+										let data = {};
+										const restKeys = ["email", "photoURL", ...Object.keys(rest)];
+										for (let i = 0; i < restKeys.length; i++) {
+											let field = restKeys[i];
+											data[field] = form[field].value;
+										}
+										data.DOB = form.DOB.value.toJSON();
+										return firebase.database().ref(`users/${user.uid}`).set(data);
+									})
 							)
-							.then((uid) => {
-								console.log(uid);
-								let data = {};
-								const restKeys = ["email", "photoURL", ...Object.keys(rest)];
-								for (let i = 0; i < restKeys.length; i++) {
-									let field = restKeys[i];
-									data[field] = form[field].value;
-								}
-								data.DOB = form.DOB.value.toJSON();
-								return firebase.database().ref(`users/${uid}`).set(data);
-							})
 							.then(() => {
 								setForm(profile);
 								navigate("/");
 							}),
 						toggleSend.toggle,
-						(message) => {
+						({ message }) => {
 							setSnackbar({ message });
 							setAPIError(message);
 						}
 					);
-				}
 			},
 			[form, toggleSend.toggle, setSnackbar]
 		),
